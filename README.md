@@ -14,6 +14,11 @@ Quarterdeck also manage to release DESQView/X a complete X environment for DOS s
 
 This document does not address DESQview/X dedicated features.
 
+DESQview downloads
+==================
+
+You can download several DESQview releases including the X version from the following site: http://www.chsoft.com/dv.html
+
 Programming DESQview - basic concepts
 =====================================
 
