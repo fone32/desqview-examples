@@ -11,8 +11,8 @@ macro CHECK4DV {
 
 check_desqview:
 	mov ax,2b01h
-	mov cx,'DE'
-	mov dx,'SQ'
+	mov cx,4445h	;'DE': don't put 'DE' in FASM becouse it will treat is as word and change byte order
+	mov dx,5351h	;'SQ'
 	int 21h
 	cmp al,0ffh
 	jne @f
