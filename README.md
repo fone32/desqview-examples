@@ -19,6 +19,31 @@ DESQview downloads
 
 You can download several DESQview releases including the X version from the following site: http://www.chsoft.com/dv.html
 
+Running DESQview
+================
+
+You can ran DESQview on MS DOS compatible system. However it is not possible to run it correctly under Windows provided Dos Box under NTVDM (NT Virtual DOS Machine). Instead you need either need to run it under emulator like Bochs or QEMU or under hypervisor like VMware Player for example. Those option require to install DOS system inside emulated or virtual machine. On such created DOS machine you can install and later run DESQView. The quickest (but with some limitations) option is to run DESQview under DosBox (http://www.dosbox.com/) emulator. This section explains how to configure DosBox to be able to run DESQview. Keep in mind that DosBox is targeting DOS games and not utilities like DESQview. This is why CONFIG.SYS is missing for example. 
+
+  1. Download and install DosBox
+  2. Open configuration file (i.e. dosbox-0.74.con)
+  3. In the [cpu] section change following lines as shown:
+      core=dynamic
+      cputype=pentium_slow
+      cycles=auto
+  4. In the [dos] section enable XMS memory by setting it to true as shown (you can enable UMB too):
+      xms=true
+  5. In the [dos] section add or edit "files" setting to 200 as shown:
+      files=200
+  6. Create directory with DESQview unpacked installation files
+  7. Start DosBox
+  8. Mount DESQview installation directory as a separate drive (i.e. mount d: c:\desqview-install)
+  9. Mount your dos directory as a C: driver (i.e mount c: c:\dosfiles)
+  10. Run DESQview installer (you will be asked to provide a serial number)
+  11. Select C: drive for installation
+  12. Run DESQview from C: drive
+
+DO NOT INSTALL QEMM as it will not run correctly under plain DosBox. To install QEMM you need to install DOS under DosBox first. 
+
 Programming DESQview - basic concepts
 =====================================
 
@@ -27,6 +52,10 @@ DESQview can ran 3 types of applications (original naming convention from Quarte
  * DESQview-oblivious: those are DOS or DOS Extended applications that are not aware of DESQView presence nor functionality.
  * DESQview-aware: those are DOS programs that checks for DESQView presence so they could ran a bit more efficiently under DESQView environment
  * DESQview-specific: those are applications written specifically for DESQView taking advantage of DESQview api and it's functionality
+
+DESQview even in 386 version does not allow full hardware virtualization since it is based on VCPI and whole concept of VCPI is to enable application to have access to mode switching and memory management functions so that memory managers, task switchers and DOS extenders can coexist. As a side effect DOS Extenders runs in privilege (ring 0) level under VCPI on 386+ CPUs. This means that DOS Extender running under DESQview 386 will run in ring 0 and DESQview can't virtualize its access to underlying hardware. In case of DESQview running on 286 CPU protected mode is not being used at all and VCPI requires 386 or higher CPU. 
+
+Therefore DESQview uses couple of different methods to handle DESQview-oblivious applications. If DESQview can recognize the application being loaded and it contains a special patch for it, the loader will patch the program before execution takes place. This allow DESQview to handle application that misbehave - access IO ports or gfx memory directly for example - even without protected mode on 286. Additionally if a PIF (Windows Program Information File dating back to IBM TopView) or DVQ (DESQvie Program Information File) is available, memory limits and other options will be applied to the execution environment of loaded application.
 
 DESQview and DOS Extenders
 ==========================
@@ -43,3 +72,14 @@ DVAPI.INC
 This is base include file that has been distributed by Quarterback. FASM does not support its syntax. 
 Basically the file provides interface based on macros. DESQview API calling is based around INT 15h with one notable exception: INT 15h could not be used to DESQview presence check. Quarterdeck has decided to use INT 21h instead. For DESQview installation/presence check please look at provided examples. 
 The OpenWatcom project provided own porn of DESQview API include file – it will also not work with FASM. 
+
+WARNING: DVAPI.INC is work in progress. The porting of original file to FASM syntax is not finished yet therefore you can now find only constants defined originally by Quarterdeck. Macros are missing.
+
+FASM includes
+=============
+
+Besides port of original DVAPI.INC we provide few additional includes that can be used in your DESQview project:
+
+ * DV.INC - this is main include for all examples, it includes all below include files and also contain data definitions
+ * DESQVIEW.INC - this include handles DESQview detection and some basic functions documented in original docs; this files is part of f/One32 FAPI interface hence it may not be fully compatible with original Quarterdeck functions.
+
