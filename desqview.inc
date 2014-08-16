@@ -1,4 +1,4 @@
-; f/One32 32-bit DOS Extender
+; f/One32 32-bit DOS Extender (c) ACP 2014
 ; desqview.inc: handles DESQview detection
 
 macro CHECK4DV {
