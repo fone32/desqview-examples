@@ -1,7 +1,9 @@
 desqview-examples
 =================
 
-FASM examples for Quarterdeck DESQview. 
+FASM examples for Quarterdeck DESQview. For most recent version of this document go to:
+
+https://github.com/fone32/desqview-examples/edit/master/README.md
 
 About DESQview
 ==============
@@ -57,6 +59,13 @@ DESQview even in 386 version does not allow full hardware virtualization since i
 
 Therefore DESQview uses couple of different methods to handle DESQview-oblivious applications. If DESQview can recognize the application being loaded and it contains a special patch for it, the loader will patch the program before execution takes place. This allow DESQview to handle application that misbehave - access IO ports or gfx memory directly for example - even without protected mode on 286. Additionally if a PIF (Windows Program Information File dating back to IBM TopView) or DVQ (DESQvie Program Information File) is available, memory limits and other options will be applied to the execution environment of loaded application.
 
+IRQs and DESQview
+-----------------
+
+Due to performance reasons DESQview is reprogramming PIC to redirect IRQ (08h-0Fh for IRQ0-07h and 70h-77h for IRQ8-15) IRQs - probably it was done mainly to speed up performance by separating IRQ5 from interrupt 0Dh: the General Protection Fault (GPF). While it does not sounds like a good idea today it wasn't such a bad move back in its day. 
+
+DESQview relocates IRQ0 to INT 50h and uses next interrupt vectors for the rest of IRQs up to INT 5Fh.
+
 DESQview and DOS Extenders
 ==========================
 
@@ -66,8 +75,27 @@ The Extended application runs in protected mode environment created by the DOS E
 
 Please note that newer version of QEMM besides providing VCPI support also DPMI through QDPMI program.
 
+VCPI
+----
+VCPI has been designed before DPMI - one of architects of this standard was Quarterdeck itself. VCPI can run on 386 or higher CPUs as it is implemented around virtual 86 mode (please note that v86 mode is not longer available on x64 in long mode). DOS extender programas running under VCPI enabled dos extender execute in ring 0 unless dos extender is being configured otherwise. In case of Phar Lap TNT DOS Extender the -unpriv switch for DosStyle programs allows to run code at ring 3 instead for example. This is one of main differences between VCPI and DPMI. Under VCPI your code is either priviledge or you can run it in ring 3. Under DPMI it is DPMI host decision which unpriviledge ring will be used for executing your code. In reality most if not every single one DPMI host implementations executes your code at ring 3. 
+To check for VCPI presence you can use INT 67h (please note that this interrupt is not emulated under all emulators - rpix86 is one of them) function DE00h. If VCPI is present AH is set to 0 and BX contains VCPI version number. 
+
+For a compelete [VCPI standard](doc/vcpi.txt) please refer to our doc section. 
+
+IRQ redirection under DOS Extenders
+-----------------------------------
+
+As noted earlier DESQview during startup is reprogramming PIC in order to redirect IRQs. If you are developing a DOS extended application that installs own IRQ handlers you have to check how your extender deals with this situation. Some DOS extenders - like Phar Lap TNT DOS Extender for example - always present IRQs at their original locations regardless of VCPI/DESQview setup. Other - like PMODE - may not be aware of DESQview at all and/or may ignore the DESQview behavior.
+
+Programming under DESQview using FASM
+=====================================
+
+After introduction to some of basic DESQview concepts you can start creating DESQview-aware applications. To create DESQview-specific applications you would need to get understand how panels and tasks works at least. This document does not cover those topic at the moment.
+
+For DESQview-aware applications we provide a set of includes aiding you in development process using FASM. Please note that originally DESQview is not aware of FASM and developer files aren't compatible with FASM syntax.
+
 DVAPI.INC
-=========
+---------
 
 This is base include file that has been distributed by Quarterback. FASM does not support its syntax. 
 Basically the file provides interface based on macros. DESQview API calling is based around INT 15h with one notable exception: INT 15h could not be used to DESQview presence check. Quarterdeck has decided to use INT 21h instead. For DESQview installation/presence check please look at provided examples. 
@@ -76,10 +104,12 @@ The OpenWatcom project provided own porn of DESQview API include file – it wil
 WARNING: DVAPI.INC is work in progress. The porting of original file to FASM syntax is not finished yet therefore you can now find only constants defined originally by Quarterdeck. Macros are missing.
 
 FASM includes
-=============
+-------------
 
 Besides port of original DVAPI.INC we provide few additional includes that can be used in your DESQview project:
 
  * DV.INC - this is main include for all examples, it includes all below include files and also contain data definitions
  * DESQVIEW.INC - this include handles DESQview detection and some basic functions documented in original docs; this files is part of f/One32 FAPI interface hence it may not be fully compatible with original Quarterdeck functions.
 
+
+Copyright ACP 2014
