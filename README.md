@@ -46,6 +46,16 @@ You can ran DESQview on MS DOS compatible system. However it is not possible to 
 
 DO NOT INSTALL QEMM as it will not run correctly under plain DosBox. To install QEMM you need to install DOS under DosBox first. 
 
+Running DESQview under other emulators
+--------------------------------------
+
+ * rpix86 - currently DESQview will not run since INT 67 emulation is missing
+ * vDosBox - not tested
+ * DOSEMU - not tested
+
+Bochs and QEMU should be fine if you install DOS. You can also use VMWare Player or VMWare ESX to run DOS inside VM.
+ 
+
 Programming DESQview - basic concepts
 =====================================
 
