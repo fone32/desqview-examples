@@ -1,4 +1,5 @@
-; simple example for DESQview detection
+; simple example for DESQview detection (c) ACP 2014
+; to compile run: fasm isdesqv.asm
 
 format mz
 entry cseg:start
